@@ -8,7 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class MainPage extends AbstractPage {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -32,48 +34,126 @@ public class MainPage extends AbstractPage {
     @FindBy(className = "inventory_item_price")
     private List<ExtendedWebElement> inventoryItemPrices;
 
-    @FindBy(className = "btn btn_primary btn_small btn_inventory")
+    @FindBy(xpath = "//button[(contains(@class, 'btn_primary btn_small btn_inventory'))]")
     private List<ExtendedWebElement> inventoryItemButtons;
+
+    @FindBy(xpath = "//select")
+    private ExtendedWebElement filter;
+
+    @FindBy(xpath = "//select/option")
+    private List<ExtendedWebElement> filterOptions;
+
+    @FindBy(className = "active_option")
+    private ExtendedWebElement activeOption;
+
+    @FindBy(xpath = "//a[(contains(@class, 'shopping_cart_link'))]")
+    private ExtendedWebElement cart;
+
+    @FindBy(id = "react-burger-menu-btn")
+    private ExtendedWebElement burgerMenu;
+
+    @FindBy(id = "logout_sidebar_link")
+    private ExtendedWebElement logOutButton;
 
     public MainPage(WebDriver driver) {
         super(driver);
         setPageAbsoluteURL(mainPageUrl);
     }
 
-    public void checkProductImage(){
-        for (ExtendedWebElement image : inventoryItemImages) {
-            image.isElementPresent();
-        }
+    public Boolean checkImageItem(){
+        return inventoryItemImages.get(0).isElementPresent();
     }
 
-    public void checkProductDescription(){
-        for (ExtendedWebElement decription : inventoryItemDescriptions) {
-            decription.isElementPresent();
-        }
+    public Boolean checkNameItem(){
+        return inventoryItemNames.get(0).isElementPresent();
     }
 
-    public void checkProductName(){
-        for (ExtendedWebElement name : inventoryItemNames) {
-            name.isElementPresent();
-        }
+    public Boolean checkDescriptionItem(){
+        return inventoryItemDescriptions.get(0).isElementPresent();
     }
 
-
-
-    public void checkProductPrice(){
-        for (ExtendedWebElement price : inventoryItemPrices) {
-            price.isElementPresent();
-        }
+    public Boolean checkPriceItem(){
+        return inventoryItemPrices.get(0).isElementPresent();
     }
 
-    public void checkProductButton(){
-        for (ExtendedWebElement button : inventoryItemButtons) {
-            button.isElementPresent();
-        }
+    public Boolean checkButtonItem(){
+        return inventoryItemButtons.get(0).isElementPresent();
     }
 
+//    public Boolean checkProductItems(){
+//        return inventoryItemNames.get(0).isElementPresent() && inventoryItemImages.get(0).isElementPresent()
+//                && inventoryItemDescriptions.get(0).isElementPresent() && inventoryItemPrices.get(0).isElementPresent()
+//                && inventoryItemButtons.get(0).isElementPresent();
+//    }
 
+    public Boolean checkFilterMenu(String option){
+        filter.click();
+        return filter.isElementWithTextPresent(option);
+    }
 
+    public String changeFilterOption(String chosenOption){
+        filter.click();
+        for (ExtendedWebElement option : filterOptions) {
+            String currentOption = option.getText();
+            LOGGER.info("currentItem: " + currentOption);
+            if (chosenOption.equalsIgnoreCase(currentOption)) {
+                option.click();
+                return activeOption.getText();
+            }
+        }
+        throw new RuntimeException("Unable to chose option: " + chosenOption);
+    }
+
+    public List<String> getItemsNameList(){
+        ArrayList<String> itemsNamesList = new ArrayList<String>();
+        for (ExtendedWebElement item : inventoryItemNames) {
+            itemsNamesList.add(item.getText());
+            LOGGER.info(item.getText());
+        }
+        return itemsNamesList;
+    }
+
+    public List<String> getNamesInAlphabeticalOrder(){
+        ArrayList<String> names = new ArrayList<String>();
+        for (ExtendedWebElement item : inventoryItemNames) {
+            names.add(item.getText());
+        }
+        String temp;
+        for (int i = 0; i < names.size(); i++) {
+            for (int j = i + 1; j < names.size(); j++) {
+                if (names.get(i).compareTo(names.get(j)) > 0) {
+                    temp = names.get(i);
+                    names.set(i,names.get(j));
+                    names.set(j,temp);
+                }
+            }
+        }
+        for (int i = 0; i < names.size(); i++) {
+            System.out.println(names.get(i));
+        }
+        return names;
+    }
+
+    //version 2 of testSortingByAlphabetical
+//    public boolean checkAlphabeticalOrder(){
+//        ArrayList<String> inventoryNamesListToCheck = new ArrayList<String>();
+//        ArrayList<String> names = new ArrayList<String>();
+//        for (ExtendedWebElement item : inventoryItemNames) {
+//            names.add(item.getText());
+//            inventoryNamesListToCheck.add(item.getText());
+//        }
+//        String temp;
+//        for (int i = 0; i < names.size(); i++) {
+//            for (int j = i + 1; j < names.size(); j++) {
+//                if (names.get(i).compareTo(names.get(j)) > 0) {
+//                    temp = names.get(i);
+//                    names.get(i).equals(names.get(j));
+//                    names.get(j).equals(temp);
+//                }
+//            }
+//        }
+//        return inventoryNamesListToCheck.equals(names);
+//    }
 
     public ProductPage selectItem(String item) {
         LOGGER.info("selecting '" + item + "' item...");
@@ -86,5 +166,35 @@ public class MainPage extends AbstractPage {
             }
         }
         throw new RuntimeException("Unable to open item: " + item);
+    }
+
+    public CartPage addProductToCart(String productName){
+        for (ExtendedWebElement item : inventoryItemNames) {
+            if (productName.equalsIgnoreCase(item.getText())) {
+                inventoryItemButtons.get(0).click();
+                cart.click();
+                return new CartPage(driver);
+            }
+        }
+        throw new RuntimeException("Unable to open cart");
+    }
+
+//    public void addProductToCart(String productName){
+//        int indx;
+//        for(int i=0; i<inventoryItemNames.size(); i++) {
+//            if (productName.equalsIgnoreCase(inventoryItemNames.get(i).getText())) {
+//                for (int j = 0; j < inventoryItemButtons.size(); j++) {
+//                    if (j == i) {
+//                        inventoryItemButtons.get(j).click();
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+    public RegistrationPage logOut(){
+        burgerMenu.click();
+        logOutButton.click();
+        return new RegistrationPage(driver);
     }
 }

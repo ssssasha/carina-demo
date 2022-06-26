@@ -8,6 +8,6 @@ import org.openqa.selenium.WebDriver;
 public class ProductPage extends AbstractPage {
     public ProductPage(WebDriver driver) {
         super(driver);
-        setPageAbsoluteURL(R.CONFIG.get(Configuration.Parameter.URL.getKey()));
+        setPageAbsoluteURL("https://www.saucedemo.com/inventory-item.html?id=");
     }
 }
