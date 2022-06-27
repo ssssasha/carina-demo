@@ -37,8 +37,9 @@ public class RegistrationPage extends AbstractPage {
         passwordField.type(password);
     }
 
-    public void clickLoginButton(){
+    public MainPage clickLoginButton(){
         loginButton.click();
+        return new MainPage(driver);
     }
 
     public String readErrorMessage(){

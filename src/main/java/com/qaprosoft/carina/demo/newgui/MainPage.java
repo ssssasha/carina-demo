@@ -2,6 +2,7 @@ package com.qaprosoft.carina.demo.newgui;
 
 import com.qaprosoft.carina.core.foundation.webdriver.decorator.ExtendedWebElement;
 import com.qaprosoft.carina.core.gui.AbstractPage;
+import org.checkerframework.checker.units.qual.C;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.FindBy;
 import org.slf4j.Logger;
@@ -60,43 +61,45 @@ public class MainPage extends AbstractPage {
         setPageAbsoluteURL(mainPageUrl);
     }
 
-    public Boolean checkImageItem(){
+    public Boolean isProductImagePresent(){
         return inventoryItemImages.get(0).isElementPresent();
     }
 
-    public Boolean checkNameItem(){
+    public Boolean isProductNamePresent(){
         return inventoryItemNames.get(0).isElementPresent();
     }
 
-    public Boolean checkDescriptionItem(){
+    public Boolean isProductDescriptionPresent(){
         return inventoryItemDescriptions.get(0).isElementPresent();
     }
 
-    public Boolean checkPriceItem(){
+    public Boolean isProductPricePresent(){
         return inventoryItemPrices.get(0).isElementPresent();
     }
 
-    public Boolean checkButtonItem(){
+    public Boolean isAddToCartButtonPresent(){
         return inventoryItemButtons.get(0).isElementPresent();
     }
 
-//    public Boolean checkProductItems(){
-//        return inventoryItemNames.get(0).isElementPresent() && inventoryItemImages.get(0).isElementPresent()
-//                && inventoryItemDescriptions.get(0).isElementPresent() && inventoryItemPrices.get(0).isElementPresent()
-//                && inventoryItemButtons.get(0).isElementPresent();
-//    }
 
-    public Boolean checkFilterMenu(String option){
+    public String getDefaultFilter(){
+        return activeOption.getText();
+    }
+
+    public MainPage filterClick(){
         filter.click();
+        return new MainPage(driver);
+    }
+
+    public Boolean isFilterMenuContainsOption (String option){
+        filterClick();
         return filter.isElementWithTextPresent(option);
     }
 
     public String changeFilterOption(String chosenOption){
-        filter.click();
+        filterClick();
         for (ExtendedWebElement option : filterOptions) {
-            String currentOption = option.getText();
-            LOGGER.info("currentItem: " + currentOption);
-            if (chosenOption.equalsIgnoreCase(currentOption)) {
+            if (chosenOption.equalsIgnoreCase(option.getText())) {
                 option.click();
                 return activeOption.getText();
             }
@@ -168,29 +171,25 @@ public class MainPage extends AbstractPage {
         throw new RuntimeException("Unable to open item: " + item);
     }
 
-    public CartPage addProductToCart(String productName){
-        for (ExtendedWebElement item : inventoryItemNames) {
-            if (productName.equalsIgnoreCase(item.getText())) {
-                inventoryItemButtons.get(0).click();
-                cart.click();
-                return new CartPage(driver);
-            }
-        }
-        throw new RuntimeException("Unable to open cart");
+    public CartPage openCartPage(){
+        cart.click();
+        return new CartPage(driver);
     }
 
-//    public void addProductToCart(String productName){
-//        int indx;
-//        for(int i=0; i<inventoryItemNames.size(); i++) {
-//            if (productName.equalsIgnoreCase(inventoryItemNames.get(i).getText())) {
-//                for (int j = 0; j < inventoryItemButtons.size(); j++) {
-//                    if (j == i) {
-//                        inventoryItemButtons.get(j).click();
-//                    }
-//                }
-//            }
-//        }
-//    }
+    public int getProductIndexByName(String productName) {
+        int index=0;
+        for (int i = 0; i < inventoryItemNames.size(); i++) {
+            if (productName.equalsIgnoreCase(inventoryItemNames.get(i).getText())) {
+               index = i;
+            }
+        }
+        return index;
+    }
+
+    public MainPage addProductToCart(int indx){
+        inventoryItemButtons.get(indx).click();
+        return new MainPage(driver);
+    }
 
     public RegistrationPage logOut(){
         burgerMenu.click();

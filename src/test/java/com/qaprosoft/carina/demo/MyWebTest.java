@@ -42,8 +42,7 @@ public class MyWebTest implements IAbstractTest {
         Assert.assertTrue(registrationPage.isPageOpened(), "Registration page is not opened");
         registrationPage.typeUsername("standard_user");
         registrationPage.typePassword("secret_sauce");
-        registrationPage.clickLoginButton();
-        MainPage mainPage = new MainPage(getDriver());
+        MainPage mainPage = registrationPage.clickLoginButton();
         Assert.assertTrue(mainPage.isPageOpened(), "Home page is not opened");
     }
 
@@ -58,15 +57,13 @@ public class MyWebTest implements IAbstractTest {
         Assert.assertTrue(registrationPage.isPageOpened(), "Registration page is not opened");
         registrationPage.typeUsername("standard_user");
         registrationPage.typePassword("secret_sauce");
-        registrationPage.clickLoginButton();
-        MainPage mainPage = new MainPage(getDriver());
+        MainPage mainPage = registrationPage.clickLoginButton();
         SoftAssert softAssert = new SoftAssert();
-        //Assert.assertTrue(mainPage.checkProductItems());
-        softAssert.assertTrue(mainPage.checkImageItem(), "Image is not present in the product card");
-        softAssert.assertTrue(mainPage.checkNameItem(), "Name is not present in the product card");
-        softAssert.assertTrue(mainPage.checkDescriptionItem(), "Description is not present in the product card");
-        softAssert.assertTrue(mainPage.checkPriceItem(), "Price is not present in the product card");
-        softAssert.assertTrue(mainPage.checkButtonItem(), "Button is not present in the product card");
+        softAssert.assertTrue(mainPage.isProductImagePresent(), "Product image is not present in the product card");
+        softAssert.assertTrue(mainPage.isProductNamePresent(), "Product name is not present in the product card");
+        softAssert.assertTrue(mainPage.isProductDescriptionPresent(), "Product description is not present in the product card");
+        softAssert.assertTrue(mainPage.isProductPricePresent(), "Product price is not present in the product card");
+        softAssert.assertTrue(mainPage.isAddToCartButtonPresent(), "Add to cart button is not present in the product card");
         softAssert.assertAll();
     }
 
@@ -80,16 +77,15 @@ public class MyWebTest implements IAbstractTest {
         Assert.assertTrue(registrationPage.isPageOpened(), "Registration page is not opened");
         registrationPage.typeUsername("standard_user");
         registrationPage.typePassword("secret_sauce");
-        registrationPage.clickLoginButton();
-        MainPage mainPage = new MainPage(getDriver());
+        MainPage mainPage = registrationPage.clickLoginButton();
         SoftAssert softAssert = new SoftAssert();
-        softAssert.assertTrue(mainPage.checkFilterMenu("Name (A to Z)"), "Drop down filter menu doesn't contain " +
+        softAssert.assertTrue(mainPage.isFilterMenuContainsOption("Name (A to Z)"), "Drop down filter menu doesn't contain " +
                 "Name (A to Z) option");
-        softAssert.assertTrue(mainPage.checkFilterMenu("Name (Z to A)"), "Drop down filter menu doesn't contain " +
+        softAssert.assertTrue(mainPage.isFilterMenuContainsOption("Name (Z to A)"), "Drop down filter menu doesn't contain " +
                 "Name (Z to A) option");
-        softAssert.assertTrue(mainPage.checkFilterMenu("Price (low to high)"), "Drop down filter menu doesn't contain " +
+        softAssert.assertTrue(mainPage.isFilterMenuContainsOption("Price (low to high)"), "Drop down filter menu doesn't contain " +
                 "Price (low to high) option");
-        softAssert.assertTrue(mainPage.checkFilterMenu("Price (high to low)"), "Drop down filter menu doesn't contain " +
+        softAssert.assertTrue(mainPage.isFilterMenuContainsOption("Price (high to low)"), "Drop down filter menu doesn't contain " +
                 "Price (high to low)");
         softAssert.assertAll();
     }
@@ -104,8 +100,9 @@ public class MyWebTest implements IAbstractTest {
         Assert.assertTrue(registrationPage.isPageOpened(), "Registration page is not opened");
         registrationPage.typeUsername("standard_user");
         registrationPage.typePassword("secret_sauce");
-        registrationPage.clickLoginButton();
-        MainPage mainPage = new MainPage(getDriver());
+        MainPage mainPage = registrationPage.clickLoginButton();
+        Assert.assertTrue(mainPage.getDefaultFilter().equalsIgnoreCase("Name (A to Z)"),
+                "Default filter option is not correct");
         String newOption = "Price (low to high)";
         Assert.assertTrue(mainPage.changeFilterOption(newOption).equalsIgnoreCase(newOption),
                 newOption + " filter is not selected");
@@ -121,9 +118,9 @@ public class MyWebTest implements IAbstractTest {
         Assert.assertTrue(registrationPage.isPageOpened(), "Registration page is not opened");
         registrationPage.typeUsername("standard_user");
         registrationPage.typePassword("secret_sauce");
-        registrationPage.clickLoginButton();
-        MainPage mainPage = new MainPage(getDriver());
-        //mainPage.changeFilterOption("Name (Z to A)");
+        MainPage mainPage = registrationPage.clickLoginButton();
+        Assert.assertTrue(mainPage.getDefaultFilter().equalsIgnoreCase("Name (A to Z)"),
+                "Default filter option is not correct");
         List<String> itemNamesToCheck = mainPage.getItemsNameList();
         List<String> itemNamesInAlphabeticalOrder = mainPage.getNamesInAlphabeticalOrder();
         Assert.assertEquals(itemNamesToCheck,itemNamesInAlphabeticalOrder,"products aren't sorted by alphabetical");
@@ -141,8 +138,7 @@ public class MyWebTest implements IAbstractTest {
         Assert.assertTrue(registrationPage.isPageOpened(), "Registration page is not opened");
         registrationPage.typeUsername("standard_user");
         registrationPage.typePassword("secret_sauce");
-        registrationPage.clickLoginButton();
-        MainPage mainPage = new MainPage(getDriver());
+        MainPage mainPage = registrationPage.clickLoginButton();
         String productName = "Sauce Labs Fleece Jacket";
         Assert.assertTrue(mainPage.selectItem(productName).isPageOpened(), "The " + productName +
                 " is not opened");
@@ -158,12 +154,13 @@ public class MyWebTest implements IAbstractTest {
         Assert.assertTrue(registrationPage.isPageOpened(), "Registration page is not opened");
         registrationPage.typeUsername("standard_user");
         registrationPage.typePassword("secret_sauce");
-        registrationPage.clickLoginButton();
-        MainPage mainPage = new MainPage(getDriver());
+        MainPage mainPage = registrationPage.clickLoginButton();
         String productName = "Sauce Labs Backpack";
-        mainPage.addProductToCart(productName);
-        CartPage cartPage = mainPage.addProductToCart(productName);
-        Assert.assertTrue(cartPage.checkProductInCart(productName), "The " + productName +
+        int productIndex = mainPage.getProductIndexByName(productName);
+        mainPage = mainPage.addProductToCart(productIndex);
+        CartPage cartPage = mainPage.openCartPage();
+        Assert.assertTrue(cartPage.isPageOpened(), "Cart page is not opened");
+        Assert.assertTrue(cartPage.isProductInCart(productName, productIndex), "The " + productName +
                 " is not added to the cart");
 
     }
@@ -178,8 +175,15 @@ public class MyWebTest implements IAbstractTest {
         Assert.assertTrue(registrationPage.isPageOpened(), "Registration page is not opened");
         registrationPage.typeUsername("standard_user");
         registrationPage.typePassword("secret_sauce");
-        registrationPage.clickLoginButton();
-        MainPage mainPage = new MainPage(getDriver());
+        MainPage mainPage = registrationPage.clickLoginButton();
+        String productName = "Sauce Labs Backpack";
+        int productIndex = mainPage.getProductIndexByName(productName);
+        mainPage = mainPage.addProductToCart(productIndex);
+        CartPage cartPage = mainPage.openCartPage();
+        Assert.assertTrue(cartPage.isPageOpened(), "Cart page is not opened");
+        cartPage = cartPage.removeProduct();
+        Assert.assertFalse(cartPage.isProductInCart(productName, productIndex), "The " + productName +
+                " is not daleted from cart");
     }
 
     @Test()
@@ -192,8 +196,7 @@ public class MyWebTest implements IAbstractTest {
         Assert.assertTrue(registrationPage.isPageOpened(), "Registration page is not opened");
         registrationPage.typeUsername("standard_user");
         registrationPage.typePassword("secret_sauce");
-        registrationPage.clickLoginButton();
-        MainPage mainPage = new MainPage(getDriver());
+        MainPage mainPage = registrationPage.clickLoginButton();
         Assert.assertTrue(mainPage.logOut().isPageOpened(), "Registration page is not opened. LogOut failed");
     }
 
