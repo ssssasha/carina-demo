@@ -2,6 +2,7 @@ package com.qaprosoft.carina.demo.newgui;
 
 import com.qaprosoft.carina.core.foundation.webdriver.decorator.ExtendedWebElement;
 import com.qaprosoft.carina.core.gui.AbstractPage;
+import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.units.qual.C;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.FindBy;
@@ -12,6 +13,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class MainPage extends AbstractPage {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -121,49 +123,14 @@ public class MainPage extends AbstractPage {
         for (ExtendedWebElement item : inventoryItemNames) {
             names.add(item.getText());
         }
-        String temp;
-        for (int i = 0; i < names.size(); i++) {
-            for (int j = i + 1; j < names.size(); j++) {
-                if (names.get(i).compareTo(names.get(j)) > 0) {
-                    temp = names.get(i);
-                    names.set(i,names.get(j));
-                    names.set(j,temp);
-                }
-            }
-        }
-        for (int i = 0; i < names.size(); i++) {
-            System.out.println(names.get(i));
-        }
-        return names;
+        List<String> sortedNamesList = names.stream().sorted().collect(Collectors.toList());
+        return sortedNamesList;
     }
-
-    //version 2 of testSortingByAlphabetical
-//    public boolean checkAlphabeticalOrder(){
-//        ArrayList<String> inventoryNamesListToCheck = new ArrayList<String>();
-//        ArrayList<String> names = new ArrayList<String>();
-//        for (ExtendedWebElement item : inventoryItemNames) {
-//            names.add(item.getText());
-//            inventoryNamesListToCheck.add(item.getText());
-//        }
-//        String temp;
-//        for (int i = 0; i < names.size(); i++) {
-//            for (int j = i + 1; j < names.size(); j++) {
-//                if (names.get(i).compareTo(names.get(j)) > 0) {
-//                    temp = names.get(i);
-//                    names.get(i).equals(names.get(j));
-//                    names.get(j).equals(temp);
-//                }
-//            }
-//        }
-//        return inventoryNamesListToCheck.equals(names);
-//    }
 
     public ProductPage selectItem(String item) {
         LOGGER.info("selecting '" + item + "' item...");
         for (ExtendedWebElement itemLink : inventoryItemNames) {
-            String currentItem = itemLink.getText();
-            LOGGER.info("currentItem: " + currentItem);
-            if (item.equalsIgnoreCase(currentItem)) {
+            if (StringUtils.equalsIgnoreCase(itemLink.getText(), item)) {
                 itemLink.click();
                 return new ProductPage(driver);
             }
