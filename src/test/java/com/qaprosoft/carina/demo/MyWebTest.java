@@ -16,7 +16,7 @@ import org.testng.asserts.SoftAssert;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyWebTest implements IAbstractTest {
+public class  MyWebTest implements IAbstractTest {
     @Test()
     @MethodOwner(owner = "qpsdemo")
     @TestPriority(Priority.P1)
@@ -199,11 +199,4 @@ public class MyWebTest implements IAbstractTest {
         MainPage mainPage = registrationPage.clickLoginButton();
         Assert.assertTrue(mainPage.logOut().isPageOpened(), "Registration page is not opened. LogOut failed");
     }
-
-
-
-
-
-
-
 }
